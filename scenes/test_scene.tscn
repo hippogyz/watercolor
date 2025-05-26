@@ -1,10 +1,11 @@
-[gd_scene load_steps=31 format=3 uid="uid://cpb4gc72puex8"]
+[gd_scene load_steps=34 format=3 uid="uid://cpb4gc72puex8"]
 
 [ext_resource type="Script" uid="uid://p0er0a4sxc1o" path="res://src/watercolor_effect.gd" id="1_j8ivh"]
 [ext_resource type="Script" uid="uid://dpity4of7immi" path="res://src/components/blur.gd" id="2_7ddre"]
 [ext_resource type="Script" uid="uid://dyayw1gb6fdhy" path="res://src/components/split_channel.gd" id="2_nd71p"]
 [ext_resource type="Script" uid="uid://dbrrmb6f4ig04" path="res://src/circle_override_screen.gd" id="3_nd71p"]
 [ext_resource type="Script" uid="uid://c8m4i40spqp6y" path="res://src/components/wash.gd" id="5_qjeyg"]
+[ext_resource type="Script" uid="uid://dd48rtc5govk0" path="res://test.gd" id="6_3qnke"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_a5oyu"]
 
@@ -162,6 +163,14 @@ albedo_color = Color(0.82606, 0.82606, 0.82606, 1)
 material = SubResource("StandardMaterial3D_u0xbq")
 size = Vector2(10, 10)
 
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_3qnke"]
+frequency = 0.0109
+offset = Vector3(116.79, 0, 0)
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_wtsjf"]
+seamless = true
+noise = SubResource("FastNoiseLite_3qnke")
+
 [node name="TestScene" type="Node"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -211,3 +220,7 @@ offset_right = 480.0
 offset_bottom = 270.0
 expand_mode = 1
 stretch_mode = 5
+
+[node name="Node" type="Node" parent="."]
+script = ExtResource("6_3qnke")
+texture = SubResource("NoiseTexture2D_wtsjf")
