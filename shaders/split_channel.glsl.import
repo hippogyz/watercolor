@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://chg7gd5tileap"
+path="res://.godot/imported/split_channel.glsl-e2c872f7cc5c06152771956520eceb28.res"
+
+[deps]
+
+source_file="res://shaders/split_channel.glsl"
+dest_files=["res://.godot/imported/split_channel.glsl-e2c872f7cc5c06152771956520eceb28.res"]
+
+[params]
+

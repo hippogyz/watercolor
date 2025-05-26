@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bt48veftwdda1"
+path="res://.godot/imported/circle_override_screen.glsl-e2d9515d1caa74db9b5d2948d27cc2c3.res"
+
+[deps]
+
+source_file="res://shaders/circle_override_screen.glsl"
+dest_files=["res://.godot/imported/circle_override_screen.glsl-e2d9515d1caa74db9b5d2948d27cc2c3.res"]
+
+[params]
+

@@ -1,0 +1,213 @@
+[gd_scene load_steps=31 format=3 uid="uid://cpb4gc72puex8"]
+
+[ext_resource type="Script" uid="uid://p0er0a4sxc1o" path="res://src/watercolor_effect.gd" id="1_j8ivh"]
+[ext_resource type="Script" uid="uid://dpity4of7immi" path="res://src/components/blur.gd" id="2_7ddre"]
+[ext_resource type="Script" uid="uid://dyayw1gb6fdhy" path="res://src/components/split_channel.gd" id="2_nd71p"]
+[ext_resource type="Script" uid="uid://dbrrmb6f4ig04" path="res://src/circle_override_screen.gd" id="3_nd71p"]
+[ext_resource type="Script" uid="uid://c8m4i40spqp6y" path="res://src/components/wash.gd" id="5_qjeyg"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_a5oyu"]
+
+[sub_resource type="Sky" id="Sky_g7g4h"]
+sky_material = SubResource("ProceduralSkyMaterial_a5oyu")
+
+[sub_resource type="Environment" id="Environment_j8ivh"]
+background_mode = 2
+sky = SubResource("Sky_g7g4h")
+
+[sub_resource type="CompositorEffect" id="CompositorEffect_nd71p"]
+resource_local_to_scene = false
+resource_name = ""
+enabled = false
+effect_callback_type = 4
+needs_motion_vectors = false
+needs_normal_roughness = false
+script = ExtResource("3_nd71p")
+radius = 0.3
+inside_color = Color(0, 0, 1, 1)
+outside_color = Color(1, 1, 1, 1)
+metadata/_custom_type_script = "uid://dbrrmb6f4ig04"
+
+[sub_resource type="Curve" id="Curve_qjeyg"]
+_data = [Vector2(0, 1), 0.0, -7.541, 0, 0, Vector2(0.142212, 0.415668), -1.94079, -1.94079, 0, 0, Vector2(0.442438, 0.16524), -0.47716, -0.47716, 0, 0, Vector2(1, 0.0595034), -0.102721, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="Curve" id="Curve_7ddre"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.286893), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Resource" id="Resource_qjeyg"]
+script = ExtResource("2_7ddre")
+enable = true
+use_double_pass = true
+down_sample_level = 1
+radius = 0.01
+radial_quality = 4
+polar_quality = 8
+polar_shift = 0.3
+direct_weight_curve = SubResource("Curve_qjeyg")
+kernel_scale = 0.03
+kernel_size = 7
+horizontal_first = true
+kernel_weight_curve = SubResource("Curve_7ddre")
+blur_debug = false
+blur_debug_layer = 1
+metadata/_custom_type_script = "uid://dpity4of7immi"
+
+[sub_resource type="Curve" id="Curve_j8ivh"]
+_data = [Vector2(0.261421, 0), 0.0, -0.0422383, 0, 0, Vector2(0.746193, 1), 0.0589279, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Resource" id="Resource_nd71p"]
+script = ExtResource("2_nd71p")
+enable = true
+split_type = 0
+channel_split_count = 4
+view_channel = 7
+view_split_flag = 4294967295
+mix_curve = SubResource("Curve_j8ivh")
+mix_curve_resolution = 32
+
+[sub_resource type="Resource" id="Resource_3qnke"]
+script = ExtResource("5_qjeyg")
+enable = true
+edge_min = 0.374
+edge_max = 0.9
+edge_pow = 2.0
+
+[sub_resource type="CompositorEffect" id="CompositorEffect_7ddre"]
+resource_local_to_scene = false
+resource_name = ""
+enabled = true
+effect_callback_type = 4
+needs_motion_vectors = false
+needs_normal_roughness = false
+script = ExtResource("1_j8ivh")
+_reset = false
+split_channel = SubResource("Resource_nd71p")
+blur = SubResource("Resource_qjeyg")
+wash = SubResource("Resource_3qnke")
+metadata/_custom_type_script = "uid://p0er0a4sxc1o"
+
+[sub_resource type="Compositor" id="Compositor_a5oyu"]
+compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_nd71p"), SubResource("CompositorEffect_7ddre")])
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nd71p"]
+albedo_color = Color(0, 1, 1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_7ddre"]
+material = SubResource("StandardMaterial3D_nd71p")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qjeyg"]
+albedo_color = Color(1, 0.392157, 0.458824, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_3qnke"]
+material = SubResource("StandardMaterial3D_qjeyg")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wtsjf"]
+albedo_color = Color(0, 1, 0.533333, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_rnaij"]
+material = SubResource("StandardMaterial3D_wtsjf")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h3xc6"]
+albedo_color = Color(1, 0.698039, 0.254902, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_s36qc"]
+material = SubResource("StandardMaterial3D_h3xc6")
+inner_radius = 0.432
+
+[sub_resource type="Animation" id="Animation_gthg3"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance3D4:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_6qxox"]
+resource_name = "new_animation"
+length = 10.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance3D4:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 10),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0, 6.28319)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ntc4i"]
+_data = {
+&"RESET": SubResource("Animation_gthg3"),
+&"new_animation": SubResource("Animation_6qxox")
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u0xbq"]
+albedo_color = Color(0.82606, 0.82606, 0.82606, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_pln1h"]
+material = SubResource("StandardMaterial3D_u0xbq")
+size = Vector2(10, 10)
+
+[node name="TestScene" type="Node"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_j8ivh")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.169917, -0.623998, 0.762729, -1.80281e-08, 0.773984, 0.633205, -0.985458, 0.107592, -0.131513, 0, 0, 0)
+shadow_enabled = true
+shadow_blur = 4.0
+directional_shadow_blend_splits = true
+directional_shadow_max_distance = 50.0
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.67613, 0.736782, 0, -0.736782, 0.67613, 0, 1.74625, 1.87118)
+compositor = SubResource("Compositor_a5oyu")
+current = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.953195, 0.185416, -0.238829, -0.291631, 0.77231, -0.564348, 0.0798113, 0.607584, 0.790236, -0.759845, 0, -0.673463)
+mesh = SubResource("BoxMesh_7ddre")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.333738, 0, -1.2383)
+mesh = SubResource("CylinderMesh_3qnke")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.606955, -0.537768, -0.164788)
+mesh = SubResource("SphereMesh_rnaij")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.606955, -0.537768, -0.164788)
+mesh = SubResource("TorusMesh_s36qc")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="MeshInstance3D4"]
+root_node = NodePath("../..")
+libraries = {
+&"": SubResource("AnimationLibrary_ntc4i")
+}
+autoplay = "new_animation"
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.66411, -1.16071)
+mesh = SubResource("PlaneMesh_pln1h")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_right = 480.0
+offset_bottom = 270.0
+expand_mode = 1
+stretch_mode = 5

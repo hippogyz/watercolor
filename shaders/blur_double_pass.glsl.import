@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cc47o1g1f43d"
+path="res://.godot/imported/blur_double_pass.glsl-295d6833a87cf20ca8816a9e40125f50.res"
+
+[deps]
+
+source_file="res://shaders/blur_double_pass.glsl"
+dest_files=["res://.godot/imported/blur_double_pass.glsl-295d6833a87cf20ca8816a9e40125f50.res"]
+
+[params]
+

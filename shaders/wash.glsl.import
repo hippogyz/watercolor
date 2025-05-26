@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://pjiea7nmcvm2"
+path="res://.godot/imported/wash.glsl-0c232c344f84890aefab2d656ca34da7.res"
+
+[deps]
+
+source_file="res://shaders/wash.glsl"
+dest_files=["res://.godot/imported/wash.glsl-0c232c344f84890aefab2d656ca34da7.res"]
+
+[params]
+
