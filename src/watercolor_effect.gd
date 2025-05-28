@@ -73,7 +73,7 @@ func _render_callback(callback_type: int, render_data: RenderData) -> void:
 			blurred_textures = self._blur_runtime.blur(splitted_textures)
 	
 	# wash
-	if self._wash_shadow.enable:
+	if self._wash_shadow.enable and blurred_textures.is_valid():
 		self._wash_runtime.wash(blurred_textures, splitted_textures)
 	
 	# mix
