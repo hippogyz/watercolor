@@ -9,7 +9,7 @@ layout (std430, set = 0, binding = 0) restrict buffer IntParams {
     } int_params;
 layout (std430, set = 0, binding = 1) restrict buffer FloatParams{
         vec3 inside_col; float radius;
-        vec3 outside_col; float reserved_11;
+        vec3 outside_col; float repeat;
     } float_params;
 
 layout (rgba16f, set = 1, binding = 0) uniform image2D target_tex;
@@ -18,6 +18,7 @@ void main() {
     ivec2 iuv = ivec2(gl_GlobalInvocationID.xy);
     ivec2 isize = ivec2(int_params.rastered_size);
     float radius = float_params.radius;
+    float repeat = float_params.repeat;
     vec3 inside_col = float_params.inside_col;
     vec3 outside_col = float_params.outside_col;
 
@@ -25,6 +26,7 @@ void main() {
         return;
     
     vec2 uv = (vec2(iuv) + vec2(0.5)) / isize;
+    uv = fract(uv * repeat);
     float y_to_x = float(isize.x) / float(isize.y);
     vec2 to_center = (uv - 0.5) * vec2(y_to_x, 1.0);
     float dist2 = dot(to_center, to_center);

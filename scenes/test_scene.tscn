@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://cpb4gc72puex8"]
+[gd_scene load_steps=38 format=3 uid="uid://cpb4gc72puex8"]
 
 [ext_resource type="Script" uid="uid://p0er0a4sxc1o" path="res://src/watercolor_effect.gd" id="1_j8ivh"]
 [ext_resource type="Script" uid="uid://dpity4of7immi" path="res://src/components/blur.gd" id="2_7ddre"]
@@ -16,7 +16,7 @@ sky_material = SubResource("ProceduralSkyMaterial_a5oyu")
 background_mode = 2
 sky = SubResource("Sky_g7g4h")
 
-[sub_resource type="CompositorEffect" id="CompositorEffect_nd71p"]
+[sub_resource type="CompositorEffect" id="CompositorEffect_3qnke"]
 resource_local_to_scene = false
 resource_name = ""
 enabled = false
@@ -25,7 +25,8 @@ needs_motion_vectors = false
 needs_normal_roughness = false
 script = ExtResource("3_nd71p")
 radius = 0.3
-inside_color = Color(0, 0, 1, 1)
+repeat = 6.025
+inside_color = Color(0.498039, 0, 1, 1)
 outside_color = Color(1, 1, 1, 1)
 metadata/_custom_type_script = "uid://dbrrmb6f4ig04"
 
@@ -47,16 +48,16 @@ radial_quality = 4
 polar_quality = 8
 polar_shift = 0.3
 direct_weight_curve = SubResource("Curve_qjeyg")
-kernel_scale = 0.03
+kernel_scale = 0.02
 kernel_size = 7
 horizontal_first = true
 kernel_weight_curve = SubResource("Curve_7ddre")
 blur_debug = false
-blur_debug_layer = 1
+blur_debug_layer = 2
 metadata/_custom_type_script = "uid://dpity4of7immi"
 
 [sub_resource type="Curve" id="Curve_j8ivh"]
-_data = [Vector2(0.261421, 0), 0.0, -0.0422383, 0, 0, Vector2(0.746193, 1), 0.0589279, 0.0, 0, 0]
+_data = [Vector2(0.459627, 0.426708), 0.0, -0.0422383, 0, 0, Vector2(0.76087, 1), 0.0589279, 0.0, 0, 0]
 point_count = 2
 
 [sub_resource type="Resource" id="Resource_nd71p"]
@@ -69,12 +70,46 @@ view_split_flag = 4294967295
 mix_curve = SubResource("Curve_j8ivh")
 mix_curve_resolution = 32
 
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_rnaij"]
+noise_type = 3
+frequency = 0.0303
+fractal_type = 0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_h3xc6"]
+seamless = true
+noise = SubResource("FastNoiseLite_rnaij")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_wtsjf"]
+noise_type = 3
+frequency = 0.0383
+fractal_type = 0
+domain_warp_enabled = true
+domain_warp_type = 1
+domain_warp_amplitude = 18.92
+domain_warp_frequency = 0.025
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_rnaij"]
+seamless = true
+noise = SubResource("FastNoiseLite_wtsjf")
+
 [sub_resource type="Resource" id="Resource_3qnke"]
 script = ExtResource("5_qjeyg")
 enable = true
-edge_min = 0.374
-edge_max = 0.9
-edge_pow = 2.0
+edge_min = 0.724
+edge_max = 1.0
+edge_pow = 4.825
+fill_strength = 0.434
+fill_uv_scale = Vector2(1.26, 1.055)
+fill_uv_offset = Vector2(0.455, -0.45)
+fill_uv_offset_shift = Vector2(11.115, 6.405)
+fill_uv_offset_rot = 1.175
+fill_noise_tex = SubResource("NoiseTexture2D_rnaij")
+border_strength = 0.293
+border_uv_scale = Vector2(1.34, 0.74)
+border_uv_offset = Vector2(0.18, 0.19)
+border_uv_offset_shift = Vector2(0.49, 0.48)
+border_uv_offset_rot = 0.71
+border_noise_tex = SubResource("NoiseTexture2D_h3xc6")
 
 [sub_resource type="CompositorEffect" id="CompositorEffect_7ddre"]
 resource_local_to_scene = false
@@ -91,7 +126,7 @@ wash = SubResource("Resource_3qnke")
 metadata/_custom_type_script = "uid://p0er0a4sxc1o"
 
 [sub_resource type="Compositor" id="Compositor_a5oyu"]
-compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_nd71p"), SubResource("CompositorEffect_7ddre")])
+compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_3qnke"), SubResource("CompositorEffect_7ddre")])
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nd71p"]
 albedo_color = Color(0, 1, 1, 1)

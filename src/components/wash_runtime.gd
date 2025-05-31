@@ -11,9 +11,16 @@ var _shader : RID
 var _pipeline : RID
 
 var _blur_sampler : RID
+var _noise_sampler : RID
 var _basic_int_params : RID
 
 var _edge_float_params : RID
+
+var _fill_default_tex : RID
+var _fill_float_params : RID
+
+var _border_default_tex : RID
+var _border_float_params : RID
 
 func _init() -> void:
 	self._rd = RenderingServer.get_rendering_device()
@@ -49,6 +56,16 @@ func _init_runtime() -> void:
 	self._blur_sampler = self._rd.sampler_create(sampler_state)
 	self._need_clean.append(self._blur_sampler)
 	
+	var noise_sampler_state = RDSamplerState.new()
+	noise_sampler_state.mag_filter = RenderingDevice.SAMPLER_FILTER_LINEAR
+	noise_sampler_state.min_filter = RenderingDevice.SAMPLER_FILTER_LINEAR
+	noise_sampler_state.mip_filter = RenderingDevice.SAMPLER_FILTER_LINEAR
+	noise_sampler_state.repeat_u = RenderingDevice.SAMPLER_REPEAT_MODE_REPEAT
+	noise_sampler_state.repeat_v = RenderingDevice.SAMPLER_REPEAT_MODE_REPEAT
+	noise_sampler_state.unnormalized_uvw = false
+	self._noise_sampler = self._rd.sampler_create(noise_sampler_state)
+	self._need_clean.append(self._noise_sampler)
+	
 	return
 
 func wash(blurred_tex : RID, target_tex : RID) -> void:
@@ -56,6 +73,10 @@ func wash(blurred_tex : RID, target_tex : RID) -> void:
 	
 	self._prepare_basic_params(Vector2i(target_tex_format.width, target_tex_format.height))
 	self._prepare_edge_params()
+	var fill_noise_tex : RID = self._prepare_fill_noise_tex()
+	self._prepare_fill_params()
+	var border_noise_tex : RID = self._prepare_border_noise_tex()
+	self._prepare_border_params()
 	
 	# set 0
 	var blurred_tex_uniform = RDUniform.new()
@@ -79,13 +100,41 @@ func wash(blurred_tex : RID, target_tex : RID) -> void:
 	
 	var uniform_set_1 = UniformSetCacheRD.get_cache(self._shader, 1, [target_tex_uniform])
 	
-	# set 2
+	# set 2 (edge)
 	var edge_uniform = RDUniform.new()
 	edge_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	edge_uniform.binding = 0
 	edge_uniform.add_id(self._edge_float_params)
 	
 	var uniform_set_2 = UniformSetCacheRD.get_cache(self._shader, 2, [edge_uniform])
+	
+	# set 3 (fill)
+	var fill_noise_uniform = RDUniform.new()
+	fill_noise_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
+	fill_noise_uniform.binding = 0
+	fill_noise_uniform.add_id(self._noise_sampler)
+	fill_noise_uniform.add_id(fill_noise_tex)
+	
+	var fill_param_uniform = RDUniform.new()
+	fill_param_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
+	fill_param_uniform.binding = 1
+	fill_param_uniform.add_id(self._fill_float_params)
+	
+	var uniform_set_3 = UniformSetCacheRD.get_cache(self._shader, 3, [fill_noise_uniform, fill_param_uniform])
+	
+	# set 4 (border)
+	var border_noise_uniform = RDUniform.new()
+	border_noise_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_SAMPLER_WITH_TEXTURE
+	border_noise_uniform.binding = 0
+	border_noise_uniform.add_id(self._noise_sampler)
+	border_noise_uniform.add_id(border_noise_tex)
+	
+	var border_param_uniform = RDUniform.new()
+	border_param_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
+	border_param_uniform.binding = 1
+	border_param_uniform.add_id(self._border_float_params)
+	
+	var uniform_set_4 = UniformSetCacheRD.get_cache(self._shader, 3, [border_noise_uniform, border_param_uniform])
 	
 	# group size
 	@warning_ignore("integer_division")
@@ -101,6 +150,8 @@ func wash(blurred_tex : RID, target_tex : RID) -> void:
 	self._rd.compute_list_bind_uniform_set(compute_list, uniform_set_0, 0)
 	self._rd.compute_list_bind_uniform_set(compute_list, uniform_set_1, 1)
 	self._rd.compute_list_bind_uniform_set(compute_list, uniform_set_2, 2)
+	self._rd.compute_list_bind_uniform_set(compute_list, uniform_set_3, 3)
+	self._rd.compute_list_bind_uniform_set(compute_list, uniform_set_4, 4)
 	self._rd.compute_list_dispatch(compute_list, x_groups, y_groups, z_groups)
 	self._rd.compute_list_end()
 	return
@@ -128,6 +179,88 @@ func _prepare_edge_params() -> void:
 		self._edge_float_params = self._rd.storage_buffer_create(edge_byte.size())
 		self._need_clean.append(self._edge_float_params)
 	self._rd.buffer_update(self._edge_float_params, 0, edge_byte.size(), edge_byte)
+	return
+
+func _prepare_fill_noise_tex() -> RID:
+	if not self._fill_default_tex.is_valid():
+		var format = RDTextureFormat.new()
+		format.format = RenderingDevice.DATA_FORMAT_R32_SFLOAT
+		format.texture_type = RenderingDevice.TEXTURE_TYPE_2D
+		format.width = 2
+		format.height = 2
+		format.usage_bits = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
+		format.usage_bits |= RenderingDevice.TEXTURE_USAGE_STORAGE_BIT
+		format.usage_bits |= RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
+		
+		self._fill_default_tex = self._rd.texture_create(format, RDTextureView.new())
+		self._need_clean.append(self._fill_default_tex)
+		
+		var data : PackedFloat32Array = [1.0, 1.0, 1.0, 1.0];
+		self._rd.texture_update(self._fill_default_tex, 0, data.to_byte_array())
+	
+	if self.wash_res.fill_noise_tex == null:
+		return self._fill_default_tex
+	
+	var tex_in_res : RID = RenderingServer.texture_get_rd_texture(self.wash_res.fill_noise_tex)
+	if not self._rd.texture_is_valid(tex_in_res):
+		return self._fill_default_tex
+	
+	return tex_in_res
+
+func _prepare_fill_params() -> void:
+	var fill_array : PackedFloat32Array = []
+	fill_array.append_array([self.wash_res.fill_strength, 0, 0, 0])
+	fill_array.append_array([self.wash_res.fill_uv_scale.x, self.wash_res.fill_uv_scale.y])
+	fill_array.append_array([self.wash_res.fill_uv_offset.x, self.wash_res.fill_uv_offset.y])
+	fill_array.append_array([self.wash_res.fill_uv_offset_shift.x, self.wash_res.fill_uv_offset_shift.y])
+	fill_array.append_array([self.wash_res.fill_uv_offset_rot, 0])
+	
+	var fill_byte = fill_array.to_byte_array()
+	if not self._fill_float_params.is_valid():
+		self._fill_float_params = self._rd.storage_buffer_create(fill_byte.size())
+		self._need_clean.append(self._fill_float_params)
+	self._rd.buffer_update(self._fill_float_params, 0, fill_byte.size(), fill_byte)
+	return
+
+func _prepare_border_noise_tex() -> RID:
+	if not self._border_default_tex.is_valid():
+		var format = RDTextureFormat.new()
+		format.format = RenderingDevice.DATA_FORMAT_R32_SFLOAT
+		format.texture_type = RenderingDevice.TEXTURE_TYPE_2D
+		format.width = 2
+		format.height = 2
+		format.usage_bits = RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
+		format.usage_bits |= RenderingDevice.TEXTURE_USAGE_STORAGE_BIT
+		format.usage_bits |= RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
+		
+		self._border_default_tex = self._rd.texture_create(format, RDTextureView.new())
+		self._need_clean.append(self._border_default_tex)
+		
+		var data : PackedFloat32Array = [1.0, 1.0, 1.0, 1.0];
+		self._rd.texture_update(self._border_default_tex, 0, data.to_byte_array())
+	
+	if self.wash_res.border_noise_tex == null:
+		return self._border_default_tex
+	
+	var tex_in_res : RID = RenderingServer.texture_get_rd_texture(self.wash_res.border_noise_tex)
+	if not self._rd.texture_is_valid(tex_in_res):
+		return self._border_default_tex
+	
+	return tex_in_res
+
+func _prepare_border_params() -> void:
+	var border_array : PackedFloat32Array = []
+	border_array.append_array([self.wash_res.border_strength, 0, 0, 0])
+	border_array.append_array([self.wash_res.border_uv_scale.x, self.wash_res.border_uv_scale.y])
+	border_array.append_array([self.wash_res.border_uv_offset.x, self.wash_res.border_uv_offset.y])
+	border_array.append_array([self.wash_res.border_uv_offset_shift.x, self.wash_res.border_uv_offset_shift.y])
+	border_array.append_array([self.wash_res.border_uv_offset_rot, 0])
+	
+	var border_byte = border_array.to_byte_array()
+	if not self._border_float_params.is_valid():
+		self._border_float_params = self._rd.storage_buffer_create(border_byte.size())
+		self._need_clean.append(self._border_float_params)
+	self._rd.buffer_update(self._border_float_params, 0, border_byte.size(), border_byte)
 	return
 
 #endregion

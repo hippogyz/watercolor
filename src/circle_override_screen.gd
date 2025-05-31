@@ -2,6 +2,7 @@
 class_name CircleOverrideScreen extends CompositorEffect
 
 @export var radius : float = 0.3
+@export var repeat : float = 5.0
 @export var inside_color : Color = Color(1.0, 1.0, 1.0)
 @export var outside_color : Color = Color(0.0, 0.0, 0.0)
 
@@ -105,7 +106,7 @@ func _prepare_resources(size : Vector2i) -> void:
 	float_array.append_array([self.inside_color.r, self.inside_color.g, self.inside_color.b])
 	float_array.append(self.radius)
 	float_array.append_array([self.outside_color.r, self.outside_color.g, self.outside_color.b])
-	float_array.append(0.0)
+	float_array.append(repeat)
 	var float_byte : PackedByteArray = float_array.to_byte_array()
 	if not self._float_params.is_valid():
 		self._float_params = self._rd.storage_buffer_create(float_byte.size())
